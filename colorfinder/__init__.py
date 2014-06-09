@@ -1,29 +1,26 @@
 import json
 from PIL import Image
-import scipy
 from scipy.misc import fromimage
 from sklearn.cluster import KMeans
-from skimage.color import rgb2lab, deltaE_ciede2000
+from skimage.color import *
 from .conversion import *
 
 
 class ColorFinder:
-    def __init__(self, mode="rgb"):
+    def __init__(self):
         colors_wide_file = open('colors_wide.json')
         colors_file = open('colors.json')
         self.colors_wide = json.load(colors_wide_file)
         self.colors = json.load(colors_file)
-        if mode.lower() not in ('rgb', 'xyz', 'lab'):
-            raise ValueError("'mode' parameter needs to be one of 'RGB', 'XYZ' or 'LAB'")
-        else:
-            self.mode = mode.lower()
 
-
-    def find_closest_color(self, color, wide=True):
+    def find_closest_color(self, color, mode, wide):
         if len(color) != 3:
             raise ValueError("'color' parameter needs to be 1D array of length 3")
 
-        mode = self.mode
+        mode = mode.lower()
+        if mode not in ('rgb', 'xyz', 'lab'):
+            raise ValueError("'mode' parameter needs to be one of 'RGB', 'XYZ' or 'LAB'")
+
         if mode == 'xyz':
             color = xyz_to_lab(color)
             mode = 'lab'
@@ -39,27 +36,36 @@ class ColorFinder:
 
         return best_color
 
-    def find_colors_kmeans(self, image, num_colors):
+    def find_colors_kmeans(self, image, num_colors, mode):
+        mode = mode.lower()
+        if mode not in ('rgb', 'xyz', 'lab'):
+            raise ValueError("'mode' parameter needs to be one of 'RGB', 'XYZ' or 'LAB'")
+
         im = Image.open(image)
         w = 300 if im.size[0] > 300 else im.size[0]
         h = w * im.size[1] // im.size[0]
         im = im.resize((w, h), Image.BILINEAR)
 
         ar = fromimage(im)
-        ar = rgb2lab(ar)
+        if mode == 'rgb':
+            ar = rgb2lab(ar)
+        elif mode == 'xyz':
+            ar = xyz2lab(ar)
+
         ar = ar.reshape(ar.shape[0] * ar.shape[1], ar.shape[2])
         km = KMeans(n_clusters=num_colors, n_jobs=-1).fit(ar)
 
         colors = set()
         for center in km.cluster_centers_:
-            colors.add(self.find_closest_color(center, wide=False))
-            colors.add(self.find_closest_color(center))
+            colors.add(self.find_closest_color(center, mode='lab', wide=False))
+            colors.add(self.find_closest_color(center, mode='lab', wide=True))
 
         return list(colors)
 
 
 def find_color(color, mode="RGB", wide=True):
-    return ColorFinder(mode).find_closest_color(color, wide)
+    return ColorFinder().find_closest_color(color, mode, wide)
 
-def find_image_colors(image, mode, num_colors):
-    return ColorFinder(mode).find_colors_kmeans(image, num_colors)
+
+def find_image_colors(image, num_colors, mode="RGB"):
+    return ColorFinder().find_colors_kmeans(image, num_colors, mode)
