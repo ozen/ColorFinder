@@ -1,0 +1,15 @@
+*.pyc
+*.log
+pip-log.txt
+/venv
+/build
+/dist
+/bin
+/include
+/lib
+/share
+*.sublime-workspace
+*.sublime-project
+.idea/
+*.egg
+*.egg-info

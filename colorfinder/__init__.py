@@ -1,0 +1,65 @@
+import json
+from PIL import Image
+import scipy
+from scipy.misc import fromimage
+from sklearn.cluster import KMeans
+from skimage.color import rgb2lab, deltaE_ciede2000
+from .conversion import *
+
+
+class ColorFinder:
+    def __init__(self, mode="rgb"):
+        colors_wide_file = open('colors_wide.json')
+        colors_file = open('colors.json')
+        self.colors_wide = json.load(colors_wide_file)
+        self.colors = json.load(colors_file)
+        if mode.lower() not in ('rgb', 'xyz', 'lab'):
+            raise ValueError("'mode' parameter needs to be one of 'RGB', 'XYZ' or 'LAB'")
+        else:
+            self.mode = mode.lower()
+
+
+    def find_closest_color(self, color, wide=True):
+        if len(color) != 3:
+            raise ValueError("'color' parameter needs to be 1D array of length 3")
+
+        mode = self.mode
+        if mode == 'xyz':
+            color = xyz_to_lab(color)
+            mode = 'lab'
+
+        colors = self.colors_wide if wide else self.colors
+        min_dist = float("inf")
+        best_color = None
+        for clr in colors:
+            distance = deltaE_ciede2000(color, clr[mode])
+            if distance < min_dist:
+                min_dist = distance
+                best_color = clr
+
+        return best_color
+
+    def find_colors_kmeans(self, image, num_colors):
+        im = Image.open(image)
+        w = 300 if im.size[0] > 300 else im.size[0]
+        h = w * im.size[1] // im.size[0]
+        im = im.resize((w, h), Image.BILINEAR)
+
+        ar = fromimage(im)
+        ar = rgb2lab(ar)
+        ar = ar.reshape(ar.shape[0] * ar.shape[1], ar.shape[2])
+        km = KMeans(n_clusters=num_colors, n_jobs=-1).fit(ar)
+
+        colors = set()
+        for center in km.cluster_centers_:
+            colors.add(self.find_closest_color(center, wide=False))
+            colors.add(self.find_closest_color(center))
+
+        return list(colors)
+
+
+def find_color(color, mode="RGB", wide=True):
+    return ColorFinder(mode).find_closest_color(color, wide)
+
+def find_image_colors(image, mode, num_colors):
+    return ColorFinder(mode).find_colors_kmeans(image, num_colors)
