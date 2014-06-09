@@ -18,8 +18,8 @@ class ColorFinder:
             raise ValueError("'color' parameter needs to be 1D array of length 3")
 
         mode = mode.lower()
-        if mode not in ('rgb', 'xyz', 'lab'):
-            raise ValueError("'mode' parameter needs to be one of 'RGB', 'XYZ' or 'LAB'")
+        if mode not in ('srgb', 'xyz', 'lab'):
+            raise ValueError("'mode' parameter needs to be one of 'sRGB', 'XYZ' or 'LAB'")
 
         if mode == 'xyz':
             color = xyz_to_lab(color)
@@ -38,13 +38,21 @@ class ColorFinder:
 
     def find_colors_kmeans(self, image, num_colors, mode):
         mode = mode.lower()
-        if mode not in ('rgb', 'xyz', 'lab'):
-            raise ValueError("'mode' parameter needs to be one of 'RGB', 'XYZ' or 'LAB'")
+        if mode not in ('srgb', 'adobe', 'xyz', 'lab'):
+            raise ValueError("'mode' parameter needs to be one of 'sRGB', 'Adobe', 'XYZ' or 'LAB'")
 
         im = Image.open(image)
         w = 300 if im.size[0] > 300 else im.size[0]
         h = w * im.size[1] // im.size[0]
         im = im.resize((w, h), Image.BILINEAR)
+
+        if mode == 'adobe':
+            im = im.convert('RGB', (
+                0.57667, 0.18556, 0.18823, 0,
+                0.29734, 0.62736, 0.07529, 0,
+                0.02703, 0.07069, 0.99134, 0,
+            ))
+            mode = 'xyz'
 
         ar = fromimage(im)
         if mode == 'rgb':
@@ -63,9 +71,9 @@ class ColorFinder:
         return list(colors)
 
 
-def find_color(color, mode="RGB", wide=True):
+def find_color(color, mode="sRGB", wide=True):
     return ColorFinder().find_closest_color(color, mode, wide)
 
 
-def find_image_colors(image, num_colors, mode="RGB"):
+def find_image_colors(image, num_colors, mode="sRGB"):
     return ColorFinder().find_colors_kmeans(image, num_colors, mode)
