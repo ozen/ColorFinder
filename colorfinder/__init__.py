@@ -55,7 +55,8 @@ class ColorFinder:
             mode = 'xyz'
 
         ar = fromimage(im)
-        if mode == 'rgb':
+
+        if mode == 'srgb':
             ar = rgb2lab(ar)
         elif mode == 'xyz':
             ar = xyz2lab(ar)
