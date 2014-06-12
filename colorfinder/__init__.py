@@ -6,8 +6,8 @@ from math import sqrt
 import scipy
 from PIL import Image
 
-import pymeanshift as pms
-from skimage import deltaE_ciede2000
+import _pymeanshift
+from .distance import deltaE_ciede2000
 from .conversion import *
 
 
@@ -71,7 +71,7 @@ class ColorFinder:
         print "applying mean-shift filter"
         spatial_radius = tune_radius(width, heigth)
         print("calculated spatial radius: %d" % spatial_radius)
-        sgm, labels_image, number_regions = pms.segment(im, spatial_radius=spatial_radius,
+        sgm, labels_image, number_regions = segment(im, spatial_radius=spatial_radius,
                                                         range_radius=8, min_density=300)
 
         # save_image_from_array('after_filter.bmp', sgm)
@@ -207,3 +207,5 @@ def find_colors(image, color_space="sRGB", palette=None, html_output=None):
     return colors
 
 
+def segment(image, spatial_radius, range_radius, min_density):
+    return _pymeanshift.segment(image, spatial_radius, range_radius, min_density, _pymeanshift.SPEEDUP_HIGH)

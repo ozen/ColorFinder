@@ -1,4 +1,9 @@
 # ! /usr/bin/env python
+from ez_setup import use_setuptools
+
+use_setuptools()
+from setuptools import setup, Extension
+from numpy import get_include as np_include
 
 
 def setup_package():
@@ -6,19 +11,27 @@ def setup_package():
     try:
         import numpy
     except:
-        build_requires = ['numpy>=1.5.1']
+        build_requires = ['numpy>=1.8.1']
 
     metadata = dict(
-        name='ColorFinder',
-        version='0.1.4',
+        name='colorfinder',
+        version='0.1.6',
         description='A tool for finding colors in an image',
         author='Yigit Ozen',
-        packages=['colorfinder', 'pymeanshift', 'skimage'],
+        license='MIT',
+        packages=['colorfinder'],
+        ext_modules=[Extension('_pymeanshift',
+                               ['pymeanshift/ms.cpp', 'pymeanshift/msImageProcessor.cpp', 'pymeanshift/rlist.cpp',
+                                'pymeanshift/RAList.cpp', 'pymeanshift/pymeanshift.cpp'],
+                               depends=['pymeanshift/ms.h', 'pymeanshift/msImageProcessor.h', 'pymeanshift/RAList.h',
+                                        'pymeanshift/rlist.h', 'pymeanshift/tdef.h'],
+                               language='c++',
+                               include_dirs=[np_include()]
+        )],
         package_data={
             'colorfinder': ['*.json'],
         },
         data_files=[("", ["LICENSE", "README"])],
-        license='MIT',
         setup_requires=build_requires,
         install_requires=[
             'Pillow',
@@ -26,11 +39,6 @@ def setup_package():
             'scipy',
         ],
     )
-
-    try:
-        from setuptools import setup
-    except ImportError:
-        from distutils.core import setup
 
     setup(**metadata)
 
