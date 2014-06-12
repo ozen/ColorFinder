@@ -10,10 +10,10 @@ def setup_package():
 
     metadata = dict(
         name='ColorFinder',
-        version='0.1',
+        version='0.1.4',
         description='A tool for finding colors in an image',
         author='Yigit Ozen',
-        packages=['colorfinder', ],
+        packages=['colorfinder', 'pymeanshift', 'skimage'],
         package_data={
             'colorfinder': ['*.json'],
         },
@@ -24,9 +24,6 @@ def setup_package():
             'Pillow',
             'numpy',
             'scipy',
-            'six >= 1.3',
-            'scikit-image',
-            'scikit-learn',
         ],
     )
 

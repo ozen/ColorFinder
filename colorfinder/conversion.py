@@ -1,4 +1,7 @@
-def srgb_to_xyz(rgb):
+from __future__ import division
+
+
+def rgb_to_xyz(rgb):
     r = rgb[0] / 255
     g = rgb[1] / 255
     b = rgb[2] / 255
@@ -71,7 +74,7 @@ def lab_to_xyz(lab):
     return [95.047 * x, 100.000 * y, 108.883 * z]
 
 
-def xyz_to_srgb(xyz):
+def xyz_to_rgb(xyz):
     x = xyz[0] / 100
     y = xyz[1] / 100
     z = xyz[2] / 100
@@ -96,9 +99,9 @@ def xyz_to_srgb(xyz):
     return [r * 255, g * 255, b * 255]
 
 
-def lab_to_srgb(lab):
-    return xyz_to_srgb(lab_to_xyz(lab))
+def lab_to_rgb(lab):
+    return xyz_to_rgb(lab_to_xyz(lab))
 
 
-def srgb_to_lab(rgb):
-    return xyz_to_lab(srgb_to_xyz(rgb))
+def rgb_to_lab(rgb):
+    return xyz_to_lab(rgb_to_xyz(rgb))
