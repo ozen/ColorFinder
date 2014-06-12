@@ -204,4 +204,6 @@ def find_colors(image, color_space="sRGB", palette=None, html_output=None):
         with codecs.open(html_output, 'w', 'utf-8') as html_file:
             write_to_html(html_file, colors)
 
+    return colors
+
 
