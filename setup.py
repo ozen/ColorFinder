@@ -19,7 +19,7 @@ def setup_package():
 
     metadata = dict(
         name='colorfinder',
-        version='0.1.6',
+        version='0.2.0',
         description='A tool for finding colors in an image',
         author='Yigit Ozen',
         license='MIT',

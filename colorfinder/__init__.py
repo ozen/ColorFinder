@@ -12,19 +12,26 @@ from .conversion import *
 
 
 class ColorFinder:
-    def __init__(self):
-        self.palette = None
+    def __init__(self, palette=None):
+        if palette is None:
+            colors_file = open(os.path.join(os.path.dirname(__file__), 'colorchecker_sg.json'))
+            self.palette = json.load(colors_file)
+        elif palette.lower() is "colorchecker":
+            colors_file = open(os.path.join(os.path.dirname(__file__), 'colorchecker.json'))
+            self.palette = json.load(colors_file)
+        elif palette.lower() is "colorchecker_sg":
+            colors_file = open(os.path.join(os.path.dirname(__file__), 'colorchecker_sg.json'))
+            self.palette = json.load(colors_file)
+        else:
+            self.palette = palette
 
-    def find_closest_color(self, color, mode, palette=None):
+    def closest_color(self, color, mode):
         if len(color) != 3:
             raise ValueError("'color' parameter needs to be 1D array of length 3")
 
         mode = mode.lower()
         if mode not in ('rgb', 'xyz', 'lab'):
             raise ValueError("'mode' parameter needs to be one of 'RGB', 'XYZ' or 'LAB'")
-
-        if palette is None:
-            palette = self.palette
 
         if mode == 'xyz':
             color = xyz_to_lab(color)
@@ -34,20 +41,18 @@ class ColorFinder:
 
         min_dist = float("inf")
         best_color = None
-        for clr in palette:
-            distance = deltaE_ciede2000(color, clr['lab'])
-            if distance < min_dist:
-                min_dist = distance
+        for clr in self.palette:
+            color_dist = deltaE_ciede2000(color, clr['lab'])
+            if color_dist < min_dist:
+                min_dist = color_dist
                 best_color = clr
 
         return best_color
 
-    def find_colors(self, palette, image, color_space='sRGB'):
+    def find(self, image, color_space='sRGB', html_output=None):
         color_space = color_space.lower()
         if color_space not in ('srgb', 'adobe'):
             raise ValueError("'color_space' parameter needs to be one of 'sRGB' or 'Adobe'")
-
-        self.palette = palette
 
         im = Image.open(image)
         im = downsize_image(im, 300)
@@ -72,7 +77,7 @@ class ColorFinder:
         spatial_radius = tune_radius(width, heigth)
         print("calculated spatial radius: %d" % spatial_radius)
         sgm, labels_image, number_regions = segment(im, spatial_radius=spatial_radius,
-                                                        range_radius=8, min_density=300)
+                                                    range_radius=8, min_density=300)
 
         # save_image_from_array('after_filter.bmp', sgm)
 
@@ -97,7 +102,7 @@ class ColorFinder:
         colors = {}
         for rgbhash in counts:
             if counts[rgbhash] > sgm.shape[0] * 0.02:
-                color = self.find_closest_color(rgb_dehash(rgbhash), 'rgb')
+                color = self.closest_color(rgb_dehash(rgbhash), 'rgb')
                 if color['label'] in colors:
                     colors[color['label']]['count'] += counts[rgbhash]
                 else:
@@ -117,6 +122,12 @@ class ColorFinder:
                             del colors[c2]
 
         print("processing finished")
+
+        if html_output:
+            print("generation html file")
+            with codecs.open(html_output, 'w', 'utf-8') as html_file:
+                write_to_html(html_file, colors)
+
         return colors
 
 
@@ -182,29 +193,6 @@ def write_to_html(fp, colors):
     html += '</body>'
     html += '</html>'
     fp.write(html)
-
-
-def find_colors(image, color_space="sRGB", palette=None, html_output=None):
-    color_space = color_space.lower()
-    if color_space not in ('srgb', 'adobe'):
-        raise ValueError("'color_space' parameter needs to be one of 'sRGB' or 'Adobe'")
-
-    if palette is None:
-        palette = os.path.join(os.path.dirname(__file__), 'colorchecker_sg.json')
-    elif palette.lower() is "colorchecker":
-        palette = os.path.join(os.path.dirname(__file__), 'colorchecker.json')
-    elif palette.lower() is "colorchecker_sg":
-        palette = os.path.join(os.path.dirname(__file__), 'colorchecker_sg.json')
-
-    colors_file = open(palette)
-    palette = json.load(colors_file)
-    colors = ColorFinder().find_colors(palette, image, color_space)
-
-    if html_output:
-        with codecs.open(html_output, 'w', 'utf-8') as html_file:
-            write_to_html(html_file, colors)
-
-    return colors
 
 
 def segment(image, spatial_radius, range_radius, min_density):
