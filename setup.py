@@ -1,8 +1,12 @@
-# ! /usr/bin/env python
-from ez_setup import use_setuptools
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from ez_setup import use_setuptools
+    use_setuptools()
+    from setuptools import setup, Extension
 
-use_setuptools()
-from setuptools import setup, Extension
 from numpy import get_include as np_include
 
 
