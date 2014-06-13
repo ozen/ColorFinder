@@ -16,10 +16,10 @@ class ColorFinder:
         if palette is None:
             colors_file = open(os.path.join(os.path.dirname(__file__), 'colorchecker_sg.json'))
             self.palette = json.load(colors_file)
-        elif palette.lower() is "colorchecker":
+        elif palette.lower() == "colorchecker":
             colors_file = open(os.path.join(os.path.dirname(__file__), 'colorchecker.json'))
             self.palette = json.load(colors_file)
-        elif palette.lower() is "colorchecker_sg":
+        elif palette.lower() == "colorchecker_sg":
             colors_file = open(os.path.join(os.path.dirname(__file__), 'colorchecker_sg.json'))
             self.palette = json.load(colors_file)
         else:
@@ -47,7 +47,7 @@ class ColorFinder:
                 min_dist = color_dist
                 best_color = clr
 
-        return best_color
+        return best_color, min_dist
 
     def find(self, image, color_space='sRGB', html_output=None):
         color_space = color_space.lower()
@@ -102,7 +102,8 @@ class ColorFinder:
         colors = {}
         for rgbhash in counts:
             if counts[rgbhash] > sgm.shape[0] * 0.02:
-                color = self.closest_color(rgb_dehash(rgbhash), 'rgb')
+                (color, dist) = self.closest_color(rgb_dehash(rgbhash), 'rgb')
+                print color, dist
                 if color['label'] in colors:
                     colors[color['label']]['count'] += counts[rgbhash]
                 else:
