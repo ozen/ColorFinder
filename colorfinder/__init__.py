@@ -16,10 +16,10 @@ class ColorFinder:
         if palette is None:
             colors_file = open(os.path.join(os.path.dirname(__file__), 'colorchecker_sg.json'))
             self.palette = json.load(colors_file)
-        elif palette.lower() == "colorchecker":
+        elif isinstance(palette, basestring) and palette.lower() == "colorchecker":
             colors_file = open(os.path.join(os.path.dirname(__file__), 'colorchecker.json'))
             self.palette = json.load(colors_file)
-        elif palette.lower() == "colorchecker_sg":
+        elif isinstance(palette, basestring) and palette.lower() == "colorchecker_sg":
             colors_file = open(os.path.join(os.path.dirname(__file__), 'colorchecker_sg.json'))
             self.palette = json.load(colors_file)
         else:
