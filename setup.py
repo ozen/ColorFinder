@@ -35,7 +35,7 @@ def setup_package():
         package_data={
             'colorfinder': ['*.json'],
         },
-        data_files=[("", ["LICENSE", "README"])],
+        data_files=[("", ["LICENSE", "README.rst"])],
         setup_requires=build_requires,
         install_requires=[
             'Pillow',
