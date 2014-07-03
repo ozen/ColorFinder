@@ -14,8 +14,9 @@ def setup_package():
     build_requires = []
     try:
         import numpy
-    except:
-        build_requires = ['numpy>=1.8.1']
+    except ImportError:
+        pass
+#        build_requires = ['numpy>=1.8.1']
 
     metadata = dict(
         name='colorfinder',
@@ -39,8 +40,8 @@ def setup_package():
         setup_requires=build_requires,
         install_requires=[
             'Pillow',
-            'numpy',
-            'scipy',
+#            'numpy',
+#            'scipy',
         ],
     )
 
