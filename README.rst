@@ -28,7 +28,7 @@ Requirements
 
 Pillow, NumPy and SciPy packages are required to use ColorFinder.
 
-NumPy requires BLAS and LAPACK libraries to compile. They can be installed on Ubuntu using the following command::
+NumPy and Scipy require BLAS and LAPACK libraries and Fortran compiler to compile. They can be installed on Ubuntu using the following command::
 
-    sudo apt-get install libblas3gf libblas-doc libblas-dev liblapack3gf liblapack-doc liblapack-dev
+    sudo apt-get install libblas3gf libblas-doc libblas-dev liblapack3gf liblapack-doc liblapack-dev gfortran
 
