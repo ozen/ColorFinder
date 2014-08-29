@@ -9,15 +9,8 @@ except ImportError:
 
 from numpy import get_include as np_include
 
-
-def setup_package():
-    build_requires = []
-    try:
-        import numpy
-    except:
-        build_requires = ['numpy>=1.8.1']
-
-    metadata = dict(
+if __name__ == '__main__':
+    setup(
         name='colorfinder',
         version='0.2.0',
         description='A tool for finding colors in an image',
@@ -36,16 +29,9 @@ def setup_package():
             'colorfinder': ['*.json'],
         },
         data_files=[("", ["LICENSE", "README.rst"])],
-        setup_requires=build_requires,
         install_requires=[
             'Pillow',
             'numpy',
             'scipy',
-        ],
+        ]
     )
-
-    setup(**metadata)
-
-
-if __name__ == '__main__':
-    setup_package()
